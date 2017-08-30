@@ -5,6 +5,7 @@ import (
 	"net/http/cookiejar"
 	"net/url"
 	"io/ioutil"
+	"strconv"
 )
 
 var cookieJar, _ = cookiejar.New(nil)
@@ -14,6 +15,7 @@ var client = &http.Client{
 }
 
 const string_url_api = "http://api.lingualeo.com/"
+const string_url_common = "https://lingualeo.com/"
 
 type Connector interface{
 	Connect()
@@ -45,14 +47,30 @@ func (s *SimpleConnector) Connect() {
 	println(string(body))
 }
 
+func (s* SimpleConnector) GetPageOfDictionary(index int) {
+	request_str := string_url_common + "userdict/json"
+	request_args := url.Values{
+		"sordBy" : {"data"},
+		"wordType" : {"1"},
+		"filter" : {"learned"},
+		"page" : {strconv.Itoa(index)},
+		"groupid" : {"dictionary"},
+	}
+	resp, err := client.PostForm(request_str, request_args)
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	println(err)
+	println(string(body))
+}
+
 func (s *SimpleConnector) AddWord(word, translate, context string) {
-	auth_request := string_url_api + "addword"
-	request := url.Values{
+	request_str := string_url_api + "addword"
+	request_args := url.Values{
 		"word" : {word},
 		"tword" : {translate},
 		"context" : {context},
 	}
-	resp, err := client.PostForm(auth_request,request)
+	resp, err := client.PostForm(request_str, request_args)
 	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	println(err)
