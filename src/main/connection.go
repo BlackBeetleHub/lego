@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"io/ioutil"
 	"strconv"
+	"encoding/json"
 )
 
 var cookieJar, _ = cookiejar.New(nil)
@@ -61,6 +62,12 @@ func (s* SimpleConnector) GetPageOfDictionary(index int) {
 	body, err := ioutil.ReadAll(resp.Body)
 	println(err)
 	println(string(body))
+	var m LeoDictionaryImpl
+	err = json.NewDecoder(resp.Body).Decode(&m)
+	if err != nil {
+		print(err.Error())
+	}
+	m.getCount()
 }
 
 func (s *SimpleConnector) AddWord(word, translate, context string) {
