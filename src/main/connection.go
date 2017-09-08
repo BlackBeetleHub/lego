@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"strconv"
 	"encoding/json"
+	json_response "json"
 )
 
 var cookieJar, _ = cookiejar.New(nil)
@@ -48,26 +49,25 @@ func (s *SimpleConnector) Connect() {
 	println(string(body))
 }
 
-func (s* SimpleConnector) GetPageOfDictionary(index int) {
+func (s* SimpleConnector) GetPageOfDictionary(index int) json_response.Dictionary {
 	request_str := string_url_common + "userdict/json"
+	ine := strconv.Itoa(index)
 	request_args := url.Values{
-		"sordBy" : {"data"},
+		"sortBy" : {"date"},
 		"wordType" : {"1"},
 		"filter" : {"learned"},
-		"page" : {strconv.Itoa(index)},
-		"groupid" : {"dictionary"},
+		"page" : {ine},
+		"groupId" : {"dictionary"},
 	}
 	resp, err := client.PostForm(request_str, request_args)
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	println(err)
-	println(string(body))
-	var m LeoDictionaryImpl
-	err = json.NewDecoder(resp.Body).Decode(&m)
+	var m json_response.LeoDictionaryImpl
+	dec := json.NewDecoder(resp.Body)
+	err = dec.Decode(&m)
 	if err != nil {
 		print(err.Error())
 	}
-	m.getCount()
+	return &m
 }
 
 func (s *SimpleConnector) AddWord(word, translate, context string) {
