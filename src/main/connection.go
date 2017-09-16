@@ -5,7 +5,6 @@ import (
 	"net/http/cookiejar"
 	"net/url"
 	"io/ioutil"
-	"strconv"
 	"encoding/json"
 	json_response "json"
 )
@@ -17,7 +16,7 @@ var client = &http.Client{
 }
 
 const string_url_api = "http://api.lingualeo.com/"
-const string_url_common = "https://lingualeo.com/"
+const string_url_common = "http://lingualeo.com/"
 
 type Connector interface{
 	Connect()
@@ -49,16 +48,16 @@ func (s *SimpleConnector) Connect() {
 	println(string(body))
 }
 
+//TODO: urlBuilder for "string_url_common" and rename veriable
 func (s* SimpleConnector) GetPageOfDictionary(index int) json_response.Dictionary {
-	request_str := string_url_common + "userdict/json"
-	ine := strconv.Itoa(index)
-	request_args := url.Values{
-		"sortBy" : {"date"},
-		"wordType" : {"1"},
-		"filter" : {"learned"},
-		"page" : {ine},
-		"groupId" : {"dictionary"},
-	}
+	request_str := string_url_common + "userdict/json?groupId=dictionary&filter=learned"
+	//ine := strconv.Itoa(index)
+	request_args := url.Values{}
+	request_args.Set("sortBy","date")
+	request_args.Add("wordType","1")
+	request_args.Add("filter","learned")
+	request_args.Add("page","1")
+	request_args.Add("groupId","dictionary")
 	resp, err := client.PostForm(request_str, request_args)
 	defer resp.Body.Close()
 	var m json_response.LeoDictionaryImpl
