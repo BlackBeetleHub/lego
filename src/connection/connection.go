@@ -8,6 +8,7 @@ import (
 	json_response "json"
 	"json/lingualeo"
 	"strconv"
+	"time"
 )
 
 var cookieJar, _ = cookiejar.New(nil)
@@ -70,6 +71,8 @@ func (s *SimpleConnector) GetCountWords() int {
 }
 
 func (s *SimpleConnector) GetAllWords() []json_response.Word {
+	start := time.Now()
+	println(start.String())
 	var result []json_response.Word
 	chRes := make(chan * []json_response.Word)
 
@@ -90,6 +93,8 @@ func (s *SimpleConnector) GetAllWords() []json_response.Word {
 		tmpData := <-chRes
 		result = append(result, *tmpData...);
 	}
+	end := time.Now()
+	println(end.String())
 	return result
 }
 
