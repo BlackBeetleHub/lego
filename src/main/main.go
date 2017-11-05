@@ -33,6 +33,6 @@ func main(){
 	router.GET("/", Index)
 	router.GET("/get_all_words", getAllWords)
 
-	log.Fatal(fasthttp.ListenAndServe(":4000", router.Handler))
+	log.Fatal(fasthttp.ListenAndServe("0.0.0.0:27300", router.Handler))
 	return
 }

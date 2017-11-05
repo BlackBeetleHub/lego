@@ -18,6 +18,7 @@ var client = &http.Client{
 
 const string_url_api = "http://api.lingualeo.com/"
 const string_url_common = "http://lingualeo.com/"
+const count_words_in_page = 100
 
 type Connector interface {
 	Connect()
@@ -64,18 +65,31 @@ func (s *SimpleConnector) GetPageOfDictionary(index int) json_response.Dictionar
 	return &m
 }
 
+func (s *SimpleConnector) GetCountWords() int {
+	return s.GetPageOfDictionary(0).GetCountWords()
+}
+
 func (s *SimpleConnector) GetAllWords() []json_response.Word {
 	var result []json_response.Word
+	chRes := make(chan * []json_response.Word)
 
-	for i := 0; ; i++ {
-		dict := s.GetPageOfDictionary(i)
-		arrayWords := dict.GetWords()
-		if len(arrayWords) == 0 {
-			break
-		}
-		result = append(result, arrayWords...)
+	countWords := s.GetCountWords()
+	println(countWords)
+	countPages := (countWords / count_words_in_page) + 1;
+
+	for i := 1; i <= countPages; i++ {
+		go func(i int) {
+			tmpArray := new([]json_response.Word)
+			println(i)
+			*tmpArray = s.GetPageOfDictionary(i).GetWords()
+			chRes <- tmpArray
+		}(i)
 	}
 
+	for i:= 0; i < countPages; i++ {
+		tmpData := <-chRes
+		result = append(result, *tmpData...);
+	}
 	return result
 }
 
