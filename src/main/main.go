@@ -18,14 +18,14 @@ func getAllWords(ctx *fasthttp.RequestCtx) {
 	ctx.Response.Header.Set("Access-Control-Allow-Origin", "*")
 	email := ctx.QueryArgs().Peek("email")
 	pass := ctx.QueryArgs().Peek("pass")
-	sp := connection.SimpleConnector{string(email), string(pass)}
+	sp := connection.SimpleConnector{Login: string(email), Pass: string(pass)}
 	sp.Connect()
 	dict := sp.GetAllWords()
-	res_json, err := json.Marshal(&dict)
+	resJson, err := json.Marshal(&dict)
 	if err != nil {
 		panic("marshal error")
 	}
-	fmt.Fprintf(ctx, string(res_json))
+	fmt.Fprintf(ctx, string(resJson))
 }
 
 func main(){
@@ -33,6 +33,6 @@ func main(){
 	router.GET("/", Index)
 	router.GET("/get_all_words", getAllWords)
 
-	log.Fatal(fasthttp.ListenAndServe("0.0.0.0:27300", router.Handler))
+	log.Fatal(fasthttp.ListenAndServe("0.0.0.0:4000", router.Handler))
 	return
 }

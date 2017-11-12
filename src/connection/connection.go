@@ -1,14 +1,13 @@
 package connection
 
 import (
+	"encoding/json"
+	jsonResponse "json"
+	"json/lingualeo"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
-	"encoding/json"
-	json_response "json"
-	"json/lingualeo"
 	"strconv"
-	"time"
 )
 
 var cookieJar, _ = cookiejar.New(nil)
@@ -17,9 +16,9 @@ var client = &http.Client{
 	Jar: cookieJar,
 }
 
-const string_url_api = "http://api.lingualeo.com/"
-const string_url_common = "http://lingualeo.com/"
-const count_words_in_page = 100
+const stringUrlApi = "http://api.lingualeo.com/"
+const stringUrlCommon = "http://lingualeo.com/"
+const countWordsInPage = 100
 
 type Connector interface {
 	Connect()
@@ -39,23 +38,23 @@ func (s *SimpleConnector) SetLogin(login string) {
 }
 
 func (s *SimpleConnector) Connect() {
-	auth_request := string_url_api + "api/login"
-	auth_params := url.Values{
+	authRequest := stringUrlApi + "api/login"
+	authParams := url.Values{
 		"email":    {s.Login},
 		"password": {s.Pass},
 	}
-	resp, err := client.PostForm(auth_request, auth_params)
+	resp, err := client.PostForm(authRequest, authParams)
 	defer resp.Body.Close()
 	if err != nil {
 		panic(err.Error())
 	}
 }
 
-//TODO: urlBuilder for "string_url_common" and rename veriable
-func (s *SimpleConnector) GetPageOfDictionary(index int) json_response.Dictionary {
-	request_str := string_url_common + "userdict/json?groupId=dictionary&filter=learned&page=" + strconv.Itoa(index) // NOTE: Use only this string
-	request_args := url.Values{}
-	resp, err := client.PostForm(request_str, request_args)
+//TODO: urlBuilder for "string_url_common" and rename variable
+func (s *SimpleConnector) GetPageOfDictionary(index int) jsonResponse.Dictionary {
+	requestStr := stringUrlCommon + "userdict/json?groupId=dictionary&filter=learned&page=" + strconv.Itoa(index)
+	requestArgs := url.Values{}
+	resp, err := client.PostForm(requestStr, requestArgs)
 	defer resp.Body.Close()
 	var m lingualeo.LeoDictionaryImpl
 	dec := json.NewDecoder(resp.Body)
@@ -70,42 +69,35 @@ func (s *SimpleConnector) GetCountWords() int {
 	return s.GetPageOfDictionary(0).GetCountWords()
 }
 
-func (s *SimpleConnector) GetAllWords() []json_response.Word {
-	start := time.Now()
-	println(start.String())
-	var result []json_response.Word
-	chRes := make(chan * []json_response.Word)
-
+func (s *SimpleConnector) GetAllWords() []jsonResponse.Word {
+	var result []jsonResponse.Word
+	chRes := make(chan *[]jsonResponse.Word)
 	countWords := s.GetCountWords()
-	println(countWords)
-	countPages := (countWords / count_words_in_page) + 1;
+	countPages := (countWords / countWordsInPage) + 1
 
 	for i := 1; i <= countPages; i++ {
 		go func(i int) {
-			tmpArray := new([]json_response.Word)
-			println(i)
+			tmpArray := new([]jsonResponse.Word)
 			*tmpArray = s.GetPageOfDictionary(i).GetWords()
 			chRes <- tmpArray
 		}(i)
 	}
 
-	for i:= 0; i < countPages; i++ {
+	for i := 0; i < countPages; i++ {
 		tmpData := <-chRes
-		result = append(result, *tmpData...);
+		result = append(result, *tmpData...)
 	}
-	end := time.Now()
-	println(end.String())
 	return result
 }
 
 func (s *SimpleConnector) AddWord(word, translate, context string) {
-	request_str := string_url_api + "addword"
-	request_args := url.Values{
+	requestStr := stringUrlApi + "addword"
+	requestArgs := url.Values{
 		"word":    {word},
 		"tword":   {translate},
 		"context": {context},
 	}
-	resp, err := client.PostForm(request_str, request_args)
+	resp, err := client.PostForm(requestStr, requestArgs)
 	defer resp.Body.Close()
 	if err != nil {
 		panic(err.Error())

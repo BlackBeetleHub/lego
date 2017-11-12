@@ -22,12 +22,12 @@ func (d *DD) GetValue() int{
 }
 
 func (d *DD) GetPast() int{
-	return d.Value + 1;
+	return d.Value + 1
 }
 
 func main() {
 	d1 := new(DD)
-	d1.Value = 1;
+	d1.Value = 1
 	result:=d1.GetValue1()
-	println(result[0].GetValue());
+	println(result[0].GetValue())
 }
